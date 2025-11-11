@@ -83,7 +83,7 @@ $flashMessage = getFlashMessage();
 <body>
     <?php include 'includes/admin_sidebar.php'; ?>
     
-    <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+    <main class="col-md-10 ms-sm-auto px-md-4 py-4" style="margin-left: 16.666667%;">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-file-alt me-2"></i>Reports & Analytics</h2>
             <button onclick="window.print()" class="btn btn-primary">

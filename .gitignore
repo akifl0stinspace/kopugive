@@ -1,5 +1,62 @@
-uploads/
-logs/
-admin/uploads/
-*.log
+# KopuGive - Git Ignore File
 
+# Uploaded files (users will create their own)
+uploads/campaigns/*
+uploads/receipts/*
+uploads/documents/*
+!uploads/campaigns/.gitkeep
+!uploads/receipts/.gitkeep
+!uploads/documents/.gitkeep
+
+# Logs
+logs/*.log
+!logs/.gitkeep
+
+# Temporary migration files (use database/migrations/*.sql instead)
+fix_*.php
+add_*.php
+*_fix.php
+*_migration.php
+
+# Configuration (if you have sensitive data)
+# Uncomment if you want to exclude config
+# config/database.php
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.buildpath
+
+# Temporary files
+*.tmp
+*.bak
+*.cache
+*.old
+
+# Node modules (if you add npm later)
+node_modules/
+package-lock.json
+
+# Composer (if you add composer later)
+vendor/
+composer.lock
+
+# Environment files
+.env
+.env.local
+.env.*.local

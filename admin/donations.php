@@ -81,7 +81,7 @@ $flashMessage = getFlashMessage();
 <body>
     <?php include 'includes/admin_sidebar.php'; ?>
     
-    <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+    <main class="col-md-10 ms-sm-auto px-md-4 py-4" style="margin-left: 16.666667%;">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-hand-holding-usd me-2"></i>Donations</h2>
         </div>
@@ -123,9 +123,12 @@ $flashMessage = getFlashMessage();
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($donations as $donation): ?>
+                            <?php 
+                            $rowNumber = 1;
+                            foreach ($donations as $donation): 
+                            ?>
                                 <tr>
-                                    <td>#<?= $donation['donation_id'] ?></td>
+                                    <td>#<?= $rowNumber++ ?></td>
                                     <td>
                                         <div class="fw-bold"><?= htmlspecialchars($donation['donor_full_name'] ?? $donation['donor_name'] ?? 'Anonymous') ?></div>
                                         <small class="text-muted"><?= htmlspecialchars($donation['donor_email'] ?? '') ?></small>
@@ -161,18 +164,21 @@ $flashMessage = getFlashMessage();
                                     </td>
                                     <td><?= formatDate($donation['donation_date'], 'd M Y H:i') ?></td>
                                     <td>
+                                        <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#donationModal<?= $donation['donation_id'] ?>" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
                                         <?php if ($donation['status'] === 'pending'): ?>
                                             <form method="POST" class="d-inline">
                                                 <input type="hidden" name="action" value="verify">
                                                 <input type="hidden" name="donation_id" value="<?= $donation['donation_id'] ?>">
-                                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Verify this donation?')">
+                                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Verify this donation?')" title="Verify">
                                                     <i class="fas fa-check"></i>
                                                 </button>
                                             </form>
                                             <form method="POST" class="d-inline">
                                                 <input type="hidden" name="action" value="reject">
                                                 <input type="hidden" name="donation_id" value="<?= $donation['donation_id'] ?>">
-                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Reject this donation?')">
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Reject this donation?')" title="Reject">
                                                     <i class="fas fa-times"></i>
                                                 </button>
                                             </form>
@@ -185,6 +191,98 @@ $flashMessage = getFlashMessage();
                 </div>
             </div>
         </div>
+        
+        <!-- Donation Detail Modals -->
+        <?php foreach ($donations as $donation): ?>
+            <div class="modal fade" id="donationModal<?= $donation['donation_id'] ?>" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Donation Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Donor Information</h6>
+                                    <p><strong>Name:</strong> <?= htmlspecialchars($donation['donor_full_name'] ?? $donation['donor_name'] ?? 'Anonymous') ?></p>
+                                    <p><strong>Email:</strong> <?= htmlspecialchars($donation['donor_email'] ?? 'N/A') ?></p>
+                                    <?php if ($donation['donor_phone']): ?>
+                                        <p><strong>Phone:</strong> <?= htmlspecialchars($donation['donor_phone']) ?></p>
+                                    <?php endif; ?>
+                                    <?php if ($donation['is_anonymous']): ?>
+                                        <span class="badge bg-secondary">Anonymous Donation</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Donation Information</h6>
+                                    <p><strong>Campaign:</strong> <?= htmlspecialchars($donation['campaign_name']) ?></p>
+                                    <p><strong>Amount:</strong> <span class="text-success fw-bold"><?= formatCurrency($donation['amount']) ?></span></p>
+                                    <p><strong>Payment Method:</strong> <?= ucfirst(str_replace('_', ' ', $donation['payment_method'])) ?></p>
+                                    <p><strong>Transaction ID:</strong> <?= htmlspecialchars($donation['transaction_id'] ?? 'N/A') ?></p>
+                                    <p><strong>Date:</strong> <?= formatDate($donation['donation_date'], 'd M Y H:i') ?></p>
+                                </div>
+                            </div>
+                            
+                            <?php if (!empty($donation['donation_message'])): ?>
+                                <hr>
+                                <h6 class="text-muted">Message</h6>
+                                <p class="fst-italic">"<?= nl2br(htmlspecialchars($donation['donation_message'])) ?>"</p>
+                            <?php endif; ?>
+                            
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Status</h6>
+                                    <?php
+                                    $badges = [
+                                        'pending' => 'warning',
+                                        'verified' => 'success',
+                                        'rejected' => 'danger'
+                                    ];
+                                    $badge = $badges[$donation['status']] ?? 'secondary';
+                                    ?>
+                                    <span class="badge bg-<?= $badge ?> fs-6"><?= ucfirst($donation['status']) ?></span>
+                                    <?php if ($donation['verified_at']): ?>
+                                        <p class="mt-2 small"><strong>Verified by:</strong> <?= htmlspecialchars($donation['verifier_name'] ?? 'System') ?><br>
+                                        <strong>Verified at:</strong> <?= formatDate($donation['verified_at'], 'd M Y H:i') ?></p>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Receipt</h6>
+                                    <?php if ($donation['receipt_path']): ?>
+                                        <a href="../<?= htmlspecialchars($donation['receipt_path']) ?>" target="_blank" class="btn btn-primary">
+                                            <i class="fas fa-file-image me-2"></i>View Receipt
+                                        </a>
+                                    <?php else: ?>
+                                        <p class="text-muted">No receipt uploaded</p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <?php if ($donation['status'] === 'pending'): ?>
+                                <form method="POST" class="d-inline">
+                                    <input type="hidden" name="action" value="verify">
+                                    <input type="hidden" name="donation_id" value="<?= $donation['donation_id'] ?>">
+                                    <button type="submit" class="btn btn-success" onclick="return confirm('Verify this donation?')">
+                                        <i class="fas fa-check me-2"></i>Verify Donation
+                                    </button>
+                                </form>
+                                <form method="POST" class="d-inline">
+                                    <input type="hidden" name="action" value="reject">
+                                    <input type="hidden" name="donation_id" value="<?= $donation['donation_id'] ?>">
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Reject this donation?')">
+                                        <i class="fas fa-times me-2"></i>Reject Donation
+                                    </button>
+                                </form>
+                            <?php endif; ?>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
     </main>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

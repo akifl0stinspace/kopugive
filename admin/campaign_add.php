@@ -30,11 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Handle banner upload
             $bannerImage = null;
             if (isset($_FILES['banner_image']) && $_FILES['banner_image']['error'] === UPLOAD_ERR_OK) {
-                // Save to project-root uploads directory (not under admin/)
-                $upload = uploadFile($_FILES['banner_image'], '../uploads/campaigns/', ['jpg', 'jpeg', 'png']);
+                // Save to project-root uploads directory
+                $upload = uploadFile($_FILES['banner_image'], 'uploads/campaigns/', ['jpg', 'jpeg', 'png']);
                 if ($upload['success']) {
-                    // Normalize stored path to be web-root relative
-                    $bannerImage = str_replace('../', '', $upload['path']);
+                    $bannerImage = $upload['path'];
                 } else {
                     $error = $upload['message'];
                 }
@@ -45,6 +44,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$campaignName, $description, $targetAmount, $startDate, $endDate, $category, $status, $bannerImage, $_SESSION['user_id']]);
                 
                 $campaignId = $db->lastInsertId();
+                
+                // Handle multiple document uploads
+                if (isset($_FILES['documents']) && is_array($_FILES['documents']['name'])) {
+                    $documentDescriptions = $_POST['document_descriptions'] ?? [];
+                    
+                    for ($i = 0; $i < count($_FILES['documents']['name']); $i++) {
+                        if ($_FILES['documents']['error'][$i] === UPLOAD_ERR_OK) {
+                            // Create a temporary file array for uploadFile function
+                            $file = [
+                                'name' => $_FILES['documents']['name'][$i],
+                                'type' => $_FILES['documents']['type'][$i],
+                                'tmp_name' => $_FILES['documents']['tmp_name'][$i],
+                                'error' => $_FILES['documents']['error'][$i],
+                                'size' => $_FILES['documents']['size'][$i]
+                            ];
+                            
+                            $upload = uploadFile($file, 'uploads/documents/', ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png']);
+                            
+                            if ($upload['success']) {
+                                $description = sanitize($documentDescriptions[$i] ?? '');
+                                $fileType = strtoupper(pathinfo($file['name'], PATHINFO_EXTENSION));
+                                
+                                $stmt = $db->prepare("INSERT INTO campaign_documents (campaign_id, document_name, document_path, document_type, file_size, description, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                                $stmt->execute([
+                                    $campaignId,
+                                    $file['name'],
+                                    $upload['path'],
+                                    $fileType,
+                                    $file['size'],
+                                    $description,
+                                    $_SESSION['user_id']
+                                ]);
+                            }
+                        }
+                    }
+                }
+                
                 logActivity($db, $_SESSION['user_id'], 'Campaign created', 'campaign', $campaignId);
                 
                 setFlashMessage('success', 'Campaign created successfully');
@@ -141,11 +177,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                             
                             <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-file-upload me-2"></i>Supporting Documents
+                                    <span class="badge bg-info ms-2">New</span>
+                                </label>
+                                <div id="documentsContainer">
+                                    <div class="document-upload-item mb-2">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <input type="file" class="form-control" name="documents[]" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="text" class="form-control" name="document_descriptions[]" placeholder="Description (e.g., Principal Approval Letter)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="addDocumentField()">
+                                    <i class="fas fa-plus me-1"></i>Add Another Document
+                                </button>
+                                <small class="text-muted d-block mt-1">Upload approval letters, budget plans, etc. Supported: PDF, DOC, DOCX, XLS, XLSX, Images</small>
+                            </div>
+                            
+                            <div class="mb-3">
                                 <label for="status" class="form-label">Status</label>
                                 <select class="form-select" id="status" name="status">
-                                    <option value="draft">Draft</option>
-                                    <option value="active">Active</option>
+                                    <option value="draft">Save as Draft</option>
+                                    <option value="pending_approval">Submit for Approval</option>
                                 </select>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Campaigns must be approved by admin before going active
+                                </small>
                             </div>
                             
                             <div class="d-grid gap-2">
@@ -167,8 +230,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <li>Provide detailed description of the campaign goals</li>
                             <li>Set realistic target amounts</li>
                             <li>Upload an attractive banner image</li>
+                            <li><strong>Upload supporting documents:</strong>
+                                <ul>
+                                    <li>Principal approval letter</li>
+                                    <li>Budget breakdown</li>
+                                    <li>Project proposal</li>
+                                    <li>Any official documentation</li>
+                                </ul>
+                            </li>
                             <li>Save as Draft to review before making it Active</li>
                         </ul>
+                    </div>
+                </div>
+                
+                <div class="card bg-info text-white mt-3">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="fas fa-shield-alt me-2"></i>Document Requirements</h6>
+                        <p class="small mb-0">For transparency and accountability, please upload relevant supporting documents such as approval letters from the principal or school administration.</p>
                     </div>
                 </div>
             </div>
@@ -176,6 +254,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function addDocumentField() {
+            const container = document.getElementById('documentsContainer');
+            const newField = document.createElement('div');
+            newField.className = 'document-upload-item mb-2';
+            newField.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <input type="file" class="form-control" name="documents[]" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" class="form-control" name="document_descriptions[]" placeholder="Description (e.g., Budget Plan)">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.document-upload-item').remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newField);
+        }
+    </script>
 </body>
 </html>
 

@@ -110,14 +110,19 @@ function uploadFile($file, $uploadDir = 'uploads/', $allowedTypes = ['jpg', 'jpe
     }
     
     $newFilename = uniqid() . '_' . time() . '.' . $fileExt;
-    $destination = $uploadDir . $newFilename;
     
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
+    // Convert relative path to absolute path from project root
+    $projectRoot = dirname(__DIR__) . '/';
+    $absoluteUploadDir = $projectRoot . $uploadDir;
+    $destination = $absoluteUploadDir . $newFilename;
+    
+    if (!is_dir($absoluteUploadDir)) {
+        mkdir($absoluteUploadDir, 0755, true);
     }
     
     if (move_uploaded_file($file['tmp_name'], $destination)) {
-        return ['success' => true, 'filename' => $newFilename, 'path' => $destination];
+        // Return the relative path for database storage
+        return ['success' => true, 'filename' => $newFilename, 'path' => $uploadDir . $newFilename];
     }
     
     return ['success' => false, 'message' => 'Failed to move uploaded file'];

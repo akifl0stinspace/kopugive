@@ -20,17 +20,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Fetch campaigns
+// Fetch campaigns (sorted by end date - campaigns ending soon first)
 $stmt = $db->query("
     SELECT c.*, 
            u.full_name as created_by_name,
            COUNT(DISTINCT d.donation_id) as donation_count,
-           COALESCE(SUM(CASE WHEN d.status = 'verified' THEN d.amount ELSE 0 END), 0) as total_raised
+           COALESCE(SUM(CASE WHEN d.status = 'verified' THEN d.amount ELSE 0 END), 0) as total_raised,
+           DATEDIFF(c.end_date, CURDATE()) as days_remaining
     FROM campaigns c
     LEFT JOIN users u ON c.created_by = u.user_id
     LEFT JOIN donations d ON c.campaign_id = d.campaign_id
     GROUP BY c.campaign_id
-    ORDER BY c.created_at DESC
+    ORDER BY 
+        CASE WHEN c.status = 'active' THEN 0 ELSE 1 END,
+        c.end_date ASC,
+        c.created_at DESC
 ");
 $campaigns = $stmt->fetchAll();
 
@@ -49,7 +53,7 @@ $flashMessage = getFlashMessage();
 <body>
     <?php include 'includes/admin_sidebar.php'; ?>
     
-    <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+    <main class="col-md-10 ms-sm-auto px-md-4 py-4" style="margin-left: 16.666667%;">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-bullhorn me-2"></i>Campaigns</h2>
             <a href="campaign_add.php" class="btn btn-primary">
@@ -100,26 +104,37 @@ $flashMessage = getFlashMessage();
                                         <?php
                                         $statusBadges = [
                                             'draft' => 'secondary',
+                                            'pending_approval' => 'warning',
                                             'active' => 'success',
                                             'completed' => 'info',
-                                            'closed' => 'danger'
+                                            'closed' => 'danger',
+                                            'rejected' => 'danger'
                                         ];
                                         $badge = $statusBadges[$campaign['status']] ?? 'secondary';
+                                        $statusIcons = [
+                                            'draft' => 'file-alt',
+                                            'pending_approval' => 'clock',
+                                            'active' => 'check-circle',
+                                            'completed' => 'flag-checkered',
+                                            'closed' => 'lock',
+                                            'rejected' => 'times-circle'
+                                        ];
+                                        $icon = $statusIcons[$campaign['status']] ?? 'circle';
                                         ?>
-                                        <span class="badge bg-<?= $badge ?>"><?= ucfirst($campaign['status']) ?></span>
+                                        <span class="badge bg-<?= $badge ?>">
+                                            <i class="fas fa-<?= $icon ?> me-1"></i><?= ucfirst(str_replace('_', ' ', $campaign['status'])) ?>
+                                        </span>
                                     </td>
                                     <td>
                                         <small><?= formatDate($campaign['start_date'], 'd M') ?> - <?= formatDate($campaign['end_date'], 'd M Y') ?></small>
                                     </td>
                                     <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="campaign_view.php?id=<?= $campaign['campaign_id'] ?>" class="btn btn-outline-info" title="View">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="campaign_edit.php?id=<?= $campaign['campaign_id'] ?>" class="btn btn-outline-primary" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        </div>
+                                        <a href="campaign_view.php?id=<?= $campaign['campaign_id'] ?>" class="btn btn-sm btn-outline-info me-1" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="campaign_edit.php?id=<?= $campaign['campaign_id'] ?>" class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

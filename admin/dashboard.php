@@ -153,7 +153,7 @@ $flashMessage = getFlashMessage();
             </nav>
             
             <!-- Main Content -->
-            <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+            <main class="col-md-10 ms-sm-auto px-md-4 py-4" style="margin-left: 16.666667%;">
                 <!-- Header -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Dashboard</h2>

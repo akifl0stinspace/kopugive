@@ -3,40 +3,40 @@ session_start();
 require_once '../config/config.php';
 require_once '../includes/functions.php';
 
+if (!isLoggedIn()) {
+    redirect('../auth/login.php');
+}
+
 $db = (new Database())->getConnection();
 
-// Filters
-$search = trim($_GET['q'] ?? '');
-$category = $_GET['category'] ?? '';
+// Get filter
+$category = $_GET['category'] ?? 'all';
 
-// Build query
-$where = ["c.status = 'active'"];
-$params = [];
-if ($search !== '') {
-    $where[] = '(c.campaign_name LIKE ? OR c.description LIKE ?)';
-    $like = "%$search%";
-    $params[] = $like; $params[] = $like;
-}
-if ($category !== '') {
-    $where[] = 'c.category = ?';
-    $params[] = $category;
-}
-
-$sql = "
+// Fetch campaigns (sorted by end date - campaigns ending soon first)
+$query = "
     SELECT c.*, 
+           COUNT(DISTINCT d.donation_id) as donation_count,
            COALESCE(SUM(CASE WHEN d.status = 'verified' THEN d.amount ELSE 0 END), 0) as total_raised,
-           COUNT(DISTINCT d.donation_id) as donation_count
+           DATEDIFF(c.end_date, CURDATE()) as days_remaining
     FROM campaigns c
     LEFT JOIN donations d ON c.campaign_id = d.campaign_id
-    WHERE " . implode(' AND ', $where) . "
-    GROUP BY c.campaign_id
-    ORDER BY c.created_at DESC
+    WHERE c.status = 'active' AND c.end_date >= CURDATE()
 ";
 
-$stmt = $db->prepare($sql);
-$stmt->execute($params);
+if ($category !== 'all') {
+    $query .= " AND c.category = :category";
+}
+
+$query .= " GROUP BY c.campaign_id ORDER BY c.end_date ASC, c.created_at DESC";
+
+$stmt = $db->prepare($query);
+if ($category !== 'all') {
+    $stmt->bindValue(':category', $category);
+}
+$stmt->execute();
 $campaigns = $stmt->fetchAll();
 
+$flashMessage = getFlashMessage();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -47,91 +47,146 @@ $campaigns = $stmt->fetchAll();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .campaign-card { transition: transform .2s ease, box-shadow .2s ease; }
-        .campaign-card:hover { transform: translateY(-4px); box-shadow: 0 1rem 2rem rgba(0,0,0,.15); }
-        .banner { height: 160px; object-fit: cover; background: #eef2ff; }
+        .navbar-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .campaign-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        .campaign-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .campaign-image {
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
     </style>
 </head>
 <body class="bg-light">
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container">
-            <a class="navbar-brand fw-bold text-primary" href="../index.php">
+            <a class="navbar-brand fw-bold" href="dashboard.php">
                 <i class="fas fa-hand-holding-heart me-2"></i>KopuGive
             </a>
-            <div class="ms-auto">
-                <?php if (isLoggedIn()): ?>
-                    <a href="dashboard.php" class="btn btn-outline-primary"><i class="fas fa-tachometer-alt me-1"></i>Dashboard</a>
-                <?php else: ?>
-                    <a href="../auth/login.php" class="btn btn-outline-primary">Login</a>
-                <?php endif; ?>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.php">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="campaigns.php">
+                            <i class="fas fa-bullhorn me-1"></i>Browse Campaigns
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="my_donations.php">
+                            <i class="fas fa-history me-1"></i>My Donations
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i><?= htmlspecialchars($_SESSION['full_name']) ?>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="profile.php"><i class="fas fa-user me-2"></i>Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="../auth/logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
-
-    <div class="container py-5">
-        <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
-            <h2 class="mb-0">Browse Campaigns</h2>
+    
+    <!-- Main Content -->
+    <div class="container my-5">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">Browse Active Campaigns</h2>
+            <p class="text-muted">Support our ongoing initiatives for MRSM Kota Putra</p>
         </div>
-
-        <!-- Filters -->
-        <form class="row g-2 mb-4" method="get">
-            <div class="col-md-6">
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-search"></i></span>
-                    <input type="text" name="q" class="form-control" placeholder="Search campaigns..." value="<?= htmlspecialchars($search) ?>">
+        
+        <?php if ($flashMessage): ?>
+            <div class="alert alert-<?= $flashMessage['type'] ?> alert-dismissible fade show" role="alert">
+                <?= $flashMessage['message'] ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+        
+        <!-- Filter -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="btn-group" role="group">
+                    <a href="?category=all" class="btn btn-<?= $category === 'all' ? 'primary' : 'outline-primary' ?>">All</a>
+                    <a href="?category=education" class="btn btn-<?= $category === 'education' ? 'primary' : 'outline-primary' ?>">Education</a>
+                    <a href="?category=infrastructure" class="btn btn-<?= $category === 'infrastructure' ? 'primary' : 'outline-primary' ?>">Infrastructure</a>
+                    <a href="?category=welfare" class="btn btn-<?= $category === 'welfare' ? 'primary' : 'outline-primary' ?>">Welfare</a>
+                    <a href="?category=emergency" class="btn btn-<?= $category === 'emergency' ? 'primary' : 'outline-primary' ?>">Emergency</a>
+                    <a href="?category=other" class="btn btn-<?= $category === 'other' ? 'primary' : 'outline-primary' ?>">Other</a>
                 </div>
             </div>
-            <div class="col-md-3">
-                <select name="category" class="form-select">
-                    <option value="">All Categories</option>
-                    <?php foreach (['education','infrastructure','welfare','emergency','other'] as $cat): ?>
-                        <option value="<?= $cat ?>" <?= $category === $cat ? 'selected' : '' ?>><?= ucfirst($cat) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="col-md-3 d-grid d-md-block">
-                <button class="btn btn-primary"><i class="fas fa-filter me-1"></i>Apply</button>
-                <a href="campaigns.php" class="btn btn-outline-secondary ms-md-2">Reset</a>
-            </div>
-        </form>
-
+        </div>
+        
+        <!-- Campaigns Grid -->
         <?php if (empty($campaigns)): ?>
-            <div class="text-center text-muted py-5">
-                <i class="fas fa-folder-open fa-2x mb-2"></i>
-                <p class="mb-0">No campaigns found.</p>
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                <p class="text-muted">No active campaigns found</p>
+                <a href="?category=all" class="btn btn-primary">View All Campaigns</a>
             </div>
         <?php else: ?>
             <div class="row g-4">
                 <?php foreach ($campaigns as $campaign): ?>
-                    <?php $percentage = calculatePercentage($campaign['total_raised'] ?? 0, $campaign['target_amount']); ?>
+                    <?php $percentage = calculatePercentage($campaign['total_raised'], $campaign['target_amount']); ?>
                     <div class="col-md-6 col-lg-4">
-                        <div class="card campaign-card h-100 border-0 shadow-sm">
-                            <?php if (!empty($campaign['banner_image'])): ?>
-                                <img class="banner w-100" src="../<?= htmlspecialchars($campaign['banner_image']) ?>" alt="Banner">
+                        <div class="card campaign-card h-100">
+                            <?php if ($campaign['banner_image']): ?>
+                                <img src="../<?= htmlspecialchars($campaign['banner_image']) ?>" class="card-img-top campaign-image" alt="Campaign">
                             <?php else: ?>
-                                <div class="banner w-100 d-flex align-items-center justify-content-center text-muted">
-                                    <i class="fas fa-image"></i>
+                                <div class="campaign-image d-flex align-items-center justify-content-center text-white">
+                                    <i class="fas fa-image fa-3x"></i>
                                 </div>
                             <?php endif; ?>
+                            
                             <div class="card-body">
-                                <span class="badge bg-primary mb-2"><?= ucfirst($campaign['category']) ?></span>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-primary"><?= ucfirst($campaign['category']) ?></span>
+                                    <?php if ($campaign['days_remaining'] <= 7): ?>
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-clock me-1"></i><?= $campaign['days_remaining'] ?> days left
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                                
                                 <h5 class="card-title"><?= htmlspecialchars($campaign['campaign_name']) ?></h5>
-                                <p class="card-text text-muted"><?= htmlspecialchars(mb_strimwidth($campaign['description'] ?? '', 0, 120, '…')) ?></p>
-                                <div class="mb-2">
-                                    <div class="d-flex justify-content-between small text-muted">
-                                        <span><?= formatCurrency($campaign['total_raised'] ?? 0) ?></span>
-                                        <span>of <?= formatCurrency($campaign['target_amount']) ?></span>
+                                <p class="card-text text-muted small"><?= substr(htmlspecialchars($campaign['description']), 0, 100) ?>...</p>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <small class="fw-bold text-success"><?= formatCurrency($campaign['total_raised']) ?></small>
+                                        <small class="text-muted">of <?= formatCurrency($campaign['target_amount']) ?></small>
                                     </div>
                                     <div class="progress" style="height: 8px;">
                                         <div class="progress-bar bg-success" style="width: <?= $percentage ?>%"></div>
                                     </div>
+                                    <div class="d-flex justify-content-between mt-1">
+                                        <small class="text-muted"><?= $percentage ?>% funded</small>
+                                        <small class="text-muted"><?= $campaign['donation_count'] ?> donors</small>
+                                    </div>
                                 </div>
-                                <small class="text-muted"><i class="fas fa-users me-1"></i><?= (int)$campaign['donation_count'] ?> donors</small>
-                            </div>
-                            <div class="card-footer bg-white">
-                                <a class="btn btn-primary w-100" href="campaign_view.php?id=<?= (int)$campaign['campaign_id'] ?>">
-                                    <i class="fas fa-heart me-2"></i>Donate / View
+                                
+                                <a href="campaign_view.php?id=<?= $campaign['campaign_id'] ?>" class="btn btn-primary w-100">
+                                    <i class="fas fa-hand-holding-heart me-2"></i>Donate Now
                                 </a>
                             </div>
                         </div>
@@ -140,9 +195,8 @@ $campaigns = $stmt->fetchAll();
             </div>
         <?php endif; ?>
     </div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
+</body>
 </html>
-
 

@@ -27,16 +27,17 @@ $stmt = $db->prepare("
 $stmt->execute([$userId]);
 $recentDonations = $stmt->fetchAll();
 
-// Get active campaigns
+// Get active campaigns (sorted by end date - campaigns ending soon first)
 $stmt = $db->query("
     SELECT c.*, 
            COUNT(DISTINCT d.donation_id) as donation_count,
-           COALESCE(SUM(CASE WHEN d.status = 'verified' THEN d.amount ELSE 0 END), 0) as total_raised
+           COALESCE(SUM(CASE WHEN d.status = 'verified' THEN d.amount ELSE 0 END), 0) as total_raised,
+           DATEDIFF(c.end_date, CURDATE()) as days_remaining
     FROM campaigns c
     LEFT JOIN donations d ON c.campaign_id = d.campaign_id
     WHERE c.status = 'active' AND c.end_date >= CURDATE()
     GROUP BY c.campaign_id
-    ORDER BY c.created_at DESC
+    ORDER BY c.end_date ASC, c.created_at DESC
     LIMIT 3
 ");
 $activeCampaigns = $stmt->fetchAll();
