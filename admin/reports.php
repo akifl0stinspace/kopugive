@@ -312,28 +312,19 @@ $flashMessage = getFlashMessage();
                         <p class="mb-2"><strong>Description:</strong> <?= htmlspecialchars($campaignDetails['description']) ?></p>
                         <p class="mb-2"><strong>Created:</strong> <?= date('M d, Y', strtotime($campaignDetails['created_at'])) ?></p>
                         <p class="mb-2"><strong>Target Amount:</strong> <?= formatCurrency($campaignDetails['target_amount']) ?></p>
-                        <hr>
-                        <p class="mb-2"><strong>Campaign Status:</strong></p>
-                        <div class="d-flex gap-3">
+                        <p class="mb-2"><strong>Status:</strong> 
                             <?php
-                            $statusColors = [
-                                'active' => 'success',
-                                'draft' => 'secondary',
-                                'completed' => 'info',
-                                'closed' => 'danger'
-                            ];
-                            $statusIcons = [
-                                'active' => '🟢',
-                                'draft' => '⚫',
-                                'completed' => '🔵',
-                                'closed' => '🔴'
-                            ];
                             $status = $campaignDetails['campaign_status'];
-                            $color = $statusColors[$status] ?? 'secondary';
-                            $icon = $statusIcons[$status] ?? '⚪';
+                            $statusDisplay = [
+                                'active' => ['text' => 'Active', 'color' => 'success'],
+                                'completed' => ['text' => 'Ended', 'color' => 'info'],
+                                'closed' => ['text' => 'Closed', 'color' => 'danger'],
+                                'draft' => ['text' => 'Draft', 'color' => 'secondary']
+                            ];
+                            $display = $statusDisplay[$status] ?? ['text' => ucfirst($status), 'color' => 'secondary'];
                             ?>
-                            <span class="badge bg-<?= $color ?> fs-6"><?= $icon ?> <?= ucfirst($status) ?></span>
-                        </div>
+                            <span class="badge bg-<?= $display['color'] ?>"><?= $display['text'] ?></span>
+                        </p>
                     </div>
                     <div class="col-md-4">
                         <div class="text-center">
