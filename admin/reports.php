@@ -134,11 +134,8 @@ $query = "SELECT c.campaign_name,
            c.status as campaign_status
     FROM campaigns c
     LEFT JOIN donations d ON c.campaign_id = d.campaign_id AND d.status = 'verified'
-    WHERE 1=1" . $campaignCondition;
-if ($dateCondition) {
-    $query .= str_replace('donation_date', 'd.donation_date', $dateCondition);
-}
-$query .= " GROUP BY c.campaign_id ORDER BY total_raised DESC LIMIT 10";
+    WHERE 1=1" . $campaignCondition . $dateCondition . "
+    GROUP BY c.campaign_id ORDER BY total_raised DESC LIMIT 10";
 $stmt = $db->prepare($query);
 $stmt->execute(array_merge($campaignParams, $dateParams));
 $topCampaigns = $stmt->fetchAll();
