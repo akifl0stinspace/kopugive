@@ -310,19 +310,29 @@ $flashMessage = getFlashMessage();
                 <div class="row">
                     <div class="col-md-8">
                         <p class="mb-2"><strong>Description:</strong> <?= htmlspecialchars($campaignDetails['description']) ?></p>
-                        <p class="mb-2"><strong>Status:</strong> 
-                            <span class="badge bg-<?= $campaignDetails['campaign_status'] === 'active' ? 'success' : 'secondary' ?>">
-                                <?= ucfirst($campaignDetails['campaign_status']) ?>
-                            </span>
-                        </p>
                         <p class="mb-2"><strong>Created:</strong> <?= date('M d, Y', strtotime($campaignDetails['created_at'])) ?></p>
                         <p class="mb-2"><strong>Target Amount:</strong> <?= formatCurrency($campaignDetails['target_amount']) ?></p>
                         <hr>
-                        <p class="mb-2"><strong>Donation Status:</strong></p>
+                        <p class="mb-2"><strong>Campaign Status:</strong></p>
                         <div class="d-flex gap-3">
-                            <span class="badge bg-success">✅ Verified: <?= $summaryStats['donations']['verified'] ?? 0 ?></span>
-                            <span class="badge bg-warning">⏳ Pending: <?= $summaryStats['donations']['pending'] ?? 0 ?></span>
-                            <span class="badge bg-danger">❌ Rejected: <?= $summaryStats['donations']['rejected'] ?? 0 ?></span>
+                            <?php
+                            $statusColors = [
+                                'active' => 'success',
+                                'draft' => 'secondary',
+                                'completed' => 'info',
+                                'closed' => 'danger'
+                            ];
+                            $statusIcons = [
+                                'active' => '🟢',
+                                'draft' => '⚫',
+                                'completed' => '🔵',
+                                'closed' => '🔴'
+                            ];
+                            $status = $campaignDetails['campaign_status'];
+                            $color = $statusColors[$status] ?? 'secondary';
+                            $icon = $statusIcons[$status] ?? '⚪';
+                            ?>
+                            <span class="badge bg-<?= $color ?> fs-6"><?= $icon ?> <?= ucfirst($status) ?></span>
                         </div>
                     </div>
                     <div class="col-md-4">
