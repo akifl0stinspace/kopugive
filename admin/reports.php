@@ -198,7 +198,6 @@ $flashMessage = getFlashMessage();
     <title>Reports - KopuGive</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <?php include 'includes/admin_styles.php'; ?>
 </head>
 <body>
@@ -318,6 +317,13 @@ $flashMessage = getFlashMessage();
                         </p>
                         <p class="mb-2"><strong>Created:</strong> <?= date('M d, Y', strtotime($campaignDetails['created_at'])) ?></p>
                         <p class="mb-2"><strong>Target Amount:</strong> <?= formatCurrency($campaignDetails['target_amount']) ?></p>
+                        <hr>
+                        <p class="mb-2"><strong>Donation Status:</strong></p>
+                        <div class="d-flex gap-3">
+                            <span class="badge bg-success">✅ Verified: <?= $summaryStats['donations']['verified'] ?? 0 ?></span>
+                            <span class="badge bg-warning">⏳ Pending: <?= $summaryStats['donations']['pending'] ?? 0 ?></span>
+                            <span class="badge bg-danger">❌ Rejected: <?= $summaryStats['donations']['rejected'] ?? 0 ?></span>
+                        </div>
                     </div>
                     <div class="col-md-4">
                         <div class="text-center">
@@ -458,50 +464,6 @@ $flashMessage = getFlashMessage();
             <?php endif; ?>
         </div>
         
-        <!-- Charts -->
-        <div class="row mb-4">
-            <div class="col-md-8">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0">
-                            <i class="fas fa-chart-line me-2"></i>
-                            <?= $campaignFilter !== 'all' ? 'Campaign ' : '' ?>Donation Trends
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="monthlyChart" height="80"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>
-                            <?= $campaignFilter !== 'all' ? 'Donation Status' : 'Campaign Status' ?>
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="statusChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <?php if ($campaignFilter !== 'all' && isset($campaignTimeline) && count($campaignTimeline) > 0): ?>
-        <!-- Campaign Timeline -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Daily Donation Timeline</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="timelineChart" height="60"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <?php endif; ?>
         
         <!-- Tables -->
         <div class="row">
@@ -658,150 +620,6 @@ $flashMessage = getFlashMessage();
                 window.URL.revokeObjectURL(url);
             }
         }
-        
-        // Monthly Donations Chart
-        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-        const monthlyChart = new Chart(monthlyCtx, {
-            type: 'line',
-            data: {
-                labels: <?= json_encode(array_reverse(array_column($monthlyData, 'month'))) ?>,
-                datasets: [{
-                    label: 'Total Raised (RM)',
-                    data: <?= json_encode(array_reverse(array_column($monthlyData, 'total'))) ?>,
-                    borderColor: '#667eea',
-                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                    tension: 0.4,
-                    fill: true,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                }, {
-                    label: 'Number of Donations',
-                    data: <?= json_encode(array_reverse(array_column($monthlyData, 'count'))) ?>,
-                    borderColor: '#f093fb',
-                    backgroundColor: 'rgba(240, 147, 251, 0.1)',
-                    tension: 0.4,
-                    fill: true,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return 'RM ' + value.toLocaleString();
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        
-        <?php if ($campaignFilter !== 'all'): ?>
-        // Campaign Status Pie Chart (Donation Status)
-        const statusCtx = document.getElementById('statusChart').getContext('2d');
-        const statusChart = new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Verified', 'Pending', 'Rejected'],
-                datasets: [{
-                    data: [
-                        <?= $summaryStats['donations']['verified'] ?? 0 ?>,
-                        <?= $summaryStats['donations']['pending'] ?? 0 ?>,
-                        <?= $summaryStats['donations']['rejected'] ?? 0 ?>
-                    ],
-                    backgroundColor: ['#28a745', '#ffc107', '#dc3545']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-        <?php else: ?>
-        // Campaign Status Pie Chart
-        const statusCtx = document.getElementById('statusChart').getContext('2d');
-        const statusChart = new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Active', 'Draft', 'Completed', 'Closed'],
-                datasets: [{
-                    data: [
-                        <?= $summaryStats['campaigns']['active'] ?? 0 ?>,
-                        <?= $summaryStats['campaigns']['draft'] ?? 0 ?>,
-                        <?= $summaryStats['campaigns']['completed'] ?? 0 ?>,
-                        <?= $summaryStats['campaigns']['closed'] ?? 0 ?>
-                    ],
-                    backgroundColor: ['#28a745', '#6c757d', '#17a2b8', '#dc3545']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-        <?php endif; ?>
-        
-        <?php if ($campaignFilter !== 'all' && isset($campaignTimeline) && count($campaignTimeline) > 0): ?>
-        // Campaign Timeline Chart
-        const timelineCtx = document.getElementById('timelineChart').getContext('2d');
-        const timelineChart = new Chart(timelineCtx, {
-            type: 'bar',
-            data: {
-                labels: <?= json_encode(array_reverse(array_column($campaignTimeline, 'date'))) ?>,
-                datasets: [{
-                    label: 'Daily Donations (RM)',
-                    data: <?= json_encode(array_reverse(array_column($campaignTimeline, 'total'))) ?>,
-                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
-                    borderColor: '#667eea',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        display: true
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return 'RM ' + value.toLocaleString();
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        <?php endif; ?>
     </script>
 </body>
 </html>
