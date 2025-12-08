@@ -14,6 +14,7 @@ $campaignFilter = $_GET['campaign_id'] ?? 'all';
 $periodFilter = $_GET['period'] ?? 'all';
 $startDate = $_GET['start_date'] ?? null;
 $endDate = $_GET['end_date'] ?? null;
+$reportType = $_GET['type'] ?? 'summary'; // 'summary' or 'donations'
 
 // Calculate date range based on period
 $dateCondition = "";
@@ -122,6 +123,20 @@ $query = "SELECT u.full_name, u.email,
 $stmt = $db->prepare($query);
 $stmt->execute(array_merge($campaignParams, $dateParams));
 $topDonors = $stmt->fetchAll();
+
+// Get detailed donations list if type is 'donations'
+$donationsList = [];
+if ($reportType === 'donations') {
+    $query = "SELECT d.*, c.campaign_name, u.full_name as donor_name_full
+        FROM donations d
+        LEFT JOIN campaigns c ON d.campaign_id = c.campaign_id
+        LEFT JOIN users u ON d.donor_id = u.user_id
+        WHERE d.status = 'verified'" . $campaignCondition . $dateCondition . "
+        ORDER BY d.donation_date DESC";
+    $stmt = $db->prepare($query);
+    $stmt->execute(array_merge($campaignParams, $dateParams));
+    $donationsList = $stmt->fetchAll();
+}
 
 // Period label
 $periodLabel = 'All Time';
@@ -272,7 +287,7 @@ if ($periodFilter !== 'all') {
         <div class="report-meta">
             <div class="row">
                 <div class="col-6">
-                    <strong>Report Type:</strong> <?= $campaignFilter !== 'all' ? 'Campaign Report' : 'General Report' ?>
+                    <strong>Report Type:</strong> <?= $reportType === 'donations' ? 'Donation List Report' : ($campaignFilter !== 'all' ? 'Campaign Summary' : 'General Summary') ?>
                 </div>
                 <div class="col-6">
                     <strong>Period:</strong> <?= $periodLabel ?>
@@ -291,6 +306,48 @@ if ($periodFilter !== 'all') {
             </div>
         </div>
         
+        <?php if ($reportType === 'donations'): ?>
+        <!-- Donation List View -->
+        <h4 class="section-title">Donation Records</h4>
+        
+        <table class="table table-bordered table-sm">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Donor Name</th>
+                    <th>Campaign</th>
+                    <th>Amount</th>
+                    <th>Payment Method</th>
+                    <th>Transaction ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (count($donationsList) > 0): ?>
+                    <?php $no = 1; foreach ($donationsList as $donation): ?>
+                        <tr>
+                            <td><?= $no++ ?></td>
+                            <td><?= date('d/m/Y', strtotime($donation['donation_date'])) ?></td>
+                            <td><?= htmlspecialchars($donation['donor_name_full'] ?? $donation['donor_name']) ?></td>
+                            <td><?= htmlspecialchars($donation['campaign_name']) ?></td>
+                            <td><?= formatCurrency($donation['amount']) ?></td>
+                            <td><?= ucwords(str_replace('_', ' ', $donation['payment_method'])) ?></td>
+                            <td><?= htmlspecialchars($donation['transaction_id'] ?? '-') ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <tr class="table-light">
+                        <td colspan="4" class="text-end"><strong>TOTAL:</strong></td>
+                        <td colspan="3"><strong><?= formatCurrency($totalRaised) ?></strong></td>
+                    </tr>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="7" class="text-center">No donations found for selected criteria</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+        
+        <?php else: ?>
         <!-- Summary Statistics -->
         <h4 class="section-title">Executive Summary</h4>
         
@@ -383,6 +440,7 @@ if ($periodFilter !== 'all') {
                 <?php endforeach; ?>
             </tbody>
         </table>
+        <?php endif; ?>
         <?php endif; ?>
         
         <!-- Signatures -->

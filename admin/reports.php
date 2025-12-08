@@ -210,8 +210,11 @@ $flashMessage = getFlashMessage();
                 <button onclick="exportReport('csv')" class="btn btn-success me-2">
                     <i class="fas fa-file-csv me-2"></i>Export CSV
                 </button>
-                <a href="generate_report.php?campaign_id=<?= $campaignFilter ?>&period=<?= $periodFilter ?><?= $startDate ? '&start_date='.$startDate : '' ?><?= $endDate ? '&end_date='.$endDate : '' ?>" class="btn btn-primary" target="_blank">
-                    <i class="fas fa-file-alt me-2"></i>Generate Report
+                <a href="generate_report.php?campaign_id=<?= $campaignFilter ?>&period=<?= $periodFilter ?><?= $startDate ? '&start_date='.$startDate : '' ?><?= $endDate ? '&end_date='.$endDate : '' ?>" class="btn btn-primary me-2" target="_blank">
+                    <i class="fas fa-file-alt me-2"></i>Summary Report
+                </a>
+                <a href="generate_report.php?campaign_id=<?= $campaignFilter ?>&period=<?= $periodFilter ?><?= $startDate ? '&start_date='.$startDate : '' ?><?= $endDate ? '&end_date='.$endDate : '' ?>&type=donations" class="btn btn-info" target="_blank">
+                    <i class="fas fa-list me-2"></i>Donation List
                 </a>
             </div>
         </div>
@@ -231,7 +234,7 @@ $flashMessage = getFlashMessage();
             <div class="card-body">
                 <form method="GET" action="" id="filterForm">
                     <div class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label fw-bold">Campaign</label>
                             <select name="campaign_id" class="form-select" id="campaignSelect">
                                 <option value="all" <?= $campaignFilter === 'all' ? 'selected' : '' ?>>All Campaigns</option>
