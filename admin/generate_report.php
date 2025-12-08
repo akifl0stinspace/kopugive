@@ -385,8 +385,51 @@ if ($periodFilter !== 'all') {
             </div>
         </div>
         
-        <!-- Top Campaigns -->
-        <?php if (count($topCampaigns) > 0): ?>
+        <!-- Campaign Details or Top Campaigns -->
+        <?php if ($campaignFilter !== 'all' && $campaignDetails): ?>
+        <!-- Individual Campaign Details -->
+        <h4 class="section-title">Campaign Information</h4>
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5 class="text-primary"><?= htmlspecialchars($campaignDetails['campaign_name']) ?></h5>
+                        <p class="mb-2"><strong>Description:</strong> <?= htmlspecialchars($campaignDetails['description']) ?></p>
+                        <p class="mb-2"><strong>Status:</strong> 
+                            <?php
+                            $statusDisplay = [
+                                'active' => ['text' => 'Active', 'color' => 'success'],
+                                'completed' => ['text' => 'Ended', 'color' => 'info'],
+                                'closed' => ['text' => 'Closed', 'color' => 'danger'],
+                                'draft' => ['text' => 'Draft', 'color' => 'secondary']
+                            ];
+                            $display = $statusDisplay[$campaignDetails['status']] ?? ['text' => ucfirst($campaignDetails['status']), 'color' => 'secondary'];
+                            ?>
+                            <span class="badge bg-<?= $display['color'] ?>"><?= $display['text'] ?></span>
+                        </p>
+                        <p class="mb-2"><strong>Created:</strong> <?= date('F d, Y', strtotime($campaignDetails['created_at'])) ?></p>
+                        <p class="mb-2"><strong>Target Amount:</strong> <?= formatCurrency($campaignDetails['target_amount']) ?></p>
+                        <p class="mb-2"><strong>Amount Raised:</strong> <span class="text-success fw-bold"><?= formatCurrency($totalRaised) ?></span></p>
+                        <p class="mb-2"><strong>Progress:</strong> 
+                            <?php $progress = calculatePercentage($totalRaised, $campaignDetails['target_amount']); ?>
+                            <span class="fw-bold"><?= $progress ?>%</span>
+                        </p>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar bg-success" style="width: <?= min($progress, 100) ?>%">
+                                <?= $progress ?>%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <?php if ($campaignDetails['image_url']): ?>
+                            <img src="../<?= htmlspecialchars($campaignDetails['image_url']) ?>" alt="Campaign" class="img-fluid rounded" style="max-height: 200px;">
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php elseif (count($topCampaigns) > 0): ?>
+        <!-- Top Campaigns for General Report -->
         <h4 class="section-title">Top Performing Campaigns</h4>
         <table class="table table-bordered">
             <thead>
