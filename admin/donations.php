@@ -45,25 +45,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
 // Fetch donations with filter
 $status = $_GET['status'] ?? 'all';
+$search = $_GET['search'] ?? '';
+
 $query = "
     SELECT d.*, c.campaign_name, u.full_name as donor_full_name, v.full_name as verifier_name
     FROM donations d
     LEFT JOIN campaigns c ON d.campaign_id = c.campaign_id
     LEFT JOIN users u ON d.donor_id = u.user_id
     LEFT JOIN users v ON d.verified_by = v.user_id
+    WHERE 1=1
 ";
 
+$params = [];
+
 if ($status !== 'all') {
-    $query .= " WHERE d.status = :status";
+    $query .= " AND d.status = :status";
+    $params[':status'] = $status;
+}
+
+if (!empty($search)) {
+    $query .= " AND (d.donor_name LIKE :search OR d.donor_email LIKE :search OR c.campaign_name LIKE :search OR d.transaction_id LIKE :search)";
+    $params[':search'] = "%$search%";
 }
 
 $query .= " ORDER BY d.created_at DESC";
 
 $stmt = $db->prepare($query);
-if ($status !== 'all') {
-    $stmt->bindValue(':status', $status);
-}
-$stmt->execute();
+$stmt->execute($params);
 $donations = $stmt->fetchAll();
 
 $flashMessage = getFlashMessage();
@@ -93,14 +101,32 @@ $flashMessage = getFlashMessage();
             </div>
         <?php endif; ?>
         
-        <!-- Filter -->
+        <!-- Filter and Search -->
         <div class="card mb-3">
             <div class="card-body">
-                <div class="btn-group" role="group">
-                    <a href="?status=all" class="btn btn-<?= $status === 'all' ? 'primary' : 'outline-primary' ?>">All</a>
-                    <a href="?status=pending" class="btn btn-<?= $status === 'pending' ? 'warning' : 'outline-warning' ?>">Pending</a>
-                    <a href="?status=verified" class="btn btn-<?= $status === 'verified' ? 'success' : 'outline-success' ?>">Verified</a>
-                    <a href="?status=rejected" class="btn btn-<?= $status === 'rejected' ? 'danger' : 'outline-danger' ?>">Rejected</a>
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="btn-group" role="group">
+                            <a href="?status=all<?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" class="btn btn-<?= $status === 'all' ? 'primary' : 'outline-primary' ?>">All</a>
+                            <a href="?status=pending<?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" class="btn btn-<?= $status === 'pending' ? 'warning' : 'outline-warning' ?>">Pending</a>
+                            <a href="?status=verified<?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" class="btn btn-<?= $status === 'verified' ? 'success' : 'outline-success' ?>">Verified</a>
+                            <a href="?status=rejected<?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" class="btn btn-<?= $status === 'rejected' ? 'danger' : 'outline-danger' ?>">Rejected</a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <form method="GET" class="d-flex gap-2">
+                            <input type="hidden" name="status" value="<?= htmlspecialchars($status) ?>">
+                            <input type="text" name="search" class="form-control" placeholder="Search by donor name, email, campaign, or transaction ID..." value="<?= htmlspecialchars($search) ?>">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <?php if (!empty($search)): ?>
+                                <a href="?status=<?= $status ?>" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            <?php endif; ?>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
