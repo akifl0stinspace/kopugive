@@ -210,9 +210,9 @@ $flashMessage = getFlashMessage();
                 <button onclick="exportReport('csv')" class="btn btn-success me-2">
                     <i class="fas fa-file-csv me-2"></i>Export CSV
                 </button>
-                <button onclick="window.print()" class="btn btn-primary">
+                <a href="generate_report.php?campaign_id=<?= $campaignFilter ?>&period=<?= $periodFilter ?><?= $startDate ? '&start_date='.$startDate : '' ?><?= $endDate ? '&end_date='.$endDate : '' ?>" class="btn btn-primary" target="_blank">
                     <i class="fas fa-file-alt me-2"></i>Generate Report
-                </button>
+                </a>
             </div>
         </div>
         
