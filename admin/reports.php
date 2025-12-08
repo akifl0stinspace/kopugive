@@ -211,7 +211,7 @@ $flashMessage = getFlashMessage();
                     <i class="fas fa-file-csv me-2"></i>Export CSV
                 </button>
                 <button onclick="window.print()" class="btn btn-primary">
-                    <i class="fas fa-print me-2"></i>Print Report
+                    <i class="fas fa-file-alt me-2"></i>Generate Report
                 </button>
             </div>
         </div>
@@ -258,12 +258,12 @@ $flashMessage = getFlashMessage();
                         
                         <div class="col-md-2" id="startDateDiv" style="display: <?= $periodFilter === 'custom' ? 'block' : 'none' ?>;">
                             <label class="form-label fw-bold">Start Date</label>
-                            <input type="date" name="start_date" class="form-select" value="<?= htmlspecialchars($startDate ?? '') ?>">
+                            <input type="date" name="start_date" class="form-select" value="<?= htmlspecialchars($startDate ?? '') ?>" max="<?= date('Y-m-d') ?>">
                         </div>
                         
                         <div class="col-md-2" id="endDateDiv" style="display: <?= $periodFilter === 'custom' ? 'block' : 'none' ?>;">
                             <label class="form-label fw-bold">End Date</label>
-                            <input type="date" name="end_date" class="form-select" value="<?= htmlspecialchars($endDate ?? '') ?>">
+                            <input type="date" name="end_date" class="form-select" value="<?= htmlspecialchars($endDate ?? '') ?>" max="<?= date('Y-m-d') ?>">
                         </div>
                         
                         <div class="col-md-1 d-flex align-items-end">
@@ -357,21 +357,6 @@ $flashMessage = getFlashMessage();
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card border-info shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-1">Verified Donations</h6>
-                                <h3 class="text-info mb-0"><?= $summaryStats['donations']['verified'] ?? 0 ?></h3>
-                            </div>
-                            <div class="text-info">
-                                <i class="fas fa-check-circle fa-2x"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
                 <div class="card border-warning shadow-sm">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -412,21 +397,6 @@ $flashMessage = getFlashMessage();
                             </div>
                             <div class="text-secondary">
                                 <i class="fas fa-chart-line fa-2x"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-dark shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-1">Unique Donors</h6>
-                                <h3 class="text-dark mb-0"><?= $campaignDetails['unique_donors'] ?></h3>
-                            </div>
-                            <div class="text-dark">
-                                <i class="fas fa-user-friends fa-2x"></i>
                             </div>
                         </div>
                     </div>
