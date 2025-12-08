@@ -104,20 +104,16 @@ $flashMessage = getFlashMessage();
                                         <?php
                                         $statusBadges = [
                                             'draft' => 'secondary',
-                                            'pending_approval' => 'warning',
                                             'active' => 'success',
                                             'completed' => 'info',
-                                            'closed' => 'danger',
-                                            'rejected' => 'danger'
+                                            'closed' => 'danger'
                                         ];
                                         $badge = $statusBadges[$campaign['status']] ?? 'secondary';
                                         $statusIcons = [
                                             'draft' => 'file-alt',
-                                            'pending_approval' => 'clock',
                                             'active' => 'check-circle',
                                             'completed' => 'flag-checkered',
-                                            'closed' => 'lock',
-                                            'rejected' => 'times-circle'
+                                            'closed' => 'lock'
                                         ];
                                         $icon = $statusIcons[$campaign['status']] ?? 'circle';
                                         ?>

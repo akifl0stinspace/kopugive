@@ -18,46 +18,14 @@ if (!$campaignId) {
     exit();
 }
 
-// Handle campaign approval/rejection
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['approve_campaign'])) {
-        try {
-            $stmt = $db->prepare("UPDATE campaigns SET status = 'active', approved_by = ?, approved_at = NOW(), rejection_reason = NULL WHERE campaign_id = ?");
-            $stmt->execute([$_SESSION['user_id'], $campaignId]);
-            
-            logActivity($db, $_SESSION['user_id'], 'Campaign approved', 'campaign', $campaignId);
-            setFlashMessage('success', 'Campaign approved and activated successfully!');
-            redirect('campaign_view.php?id=' . $campaignId);
-        } catch (Exception $e) {
-            setFlashMessage('danger', 'Error approving campaign: ' . $e->getMessage());
-        }
-    } elseif (isset($_POST['reject_campaign'])) {
-        $rejectionReason = sanitize($_POST['rejection_reason'] ?? '');
-        if (empty($rejectionReason)) {
-            setFlashMessage('danger', 'Please provide a rejection reason');
-        } else {
-            try {
-                $stmt = $db->prepare("UPDATE campaigns SET status = 'rejected', rejection_reason = ?, approved_by = NULL, approved_at = NULL WHERE campaign_id = ?");
-                $stmt->execute([$rejectionReason, $campaignId]);
-                
-                logActivity($db, $_SESSION['user_id'], 'Campaign rejected', 'campaign', $campaignId);
-                setFlashMessage('warning', 'Campaign rejected. Creator will be notified.');
-                redirect('campaign_view.php?id=' . $campaignId);
-            } catch (Exception $e) {
-                setFlashMessage('danger', 'Error rejecting campaign: ' . $e->getMessage());
-            }
-        }
-    }
-}
+// No approval handling needed - documents are pre-approved by headmaster
 
 // Fetch campaign details
 $stmt = $db->prepare("
     SELECT c.*, 
-           u.full_name as created_by_name,
-           approver.full_name as approved_by_name
+           u.full_name as created_by_name
     FROM campaigns c
     LEFT JOIN users u ON c.created_by = u.user_id
-    LEFT JOIN users approver ON c.approved_by = approver.user_id
     WHERE c.campaign_id = ?
 ");
 $stmt->execute([$campaignId]);
@@ -250,52 +218,6 @@ $flashMessage = getFlashMessage();
                     </div>
                 </div>
                 
-                <!-- Campaign Approval -->
-                <?php if ($campaign['status'] === 'pending_approval'): ?>
-                <div class="card mb-3 border-warning">
-                    <div class="card-header bg-warning text-dark">
-                        <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Pending Approval</h6>
-                    </div>
-                    <div class="card-body">
-                        <p class="mb-3">This campaign is waiting for admin approval. Review the documents and details before approving.</p>
-                        
-                        <form method="POST" class="mb-2">
-                            <button type="submit" name="approve_campaign" class="btn btn-success w-100 mb-2" onclick="return confirm('Approve this campaign and make it active?')">
-                                <i class="fas fa-check-circle me-2"></i>Approve Campaign
-                            </button>
-                        </form>
-                        
-                        <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#rejectModal">
-                            <i class="fas fa-times-circle me-2"></i>Reject Campaign
-                        </button>
-                    </div>
-                </div>
-                <?php endif; ?>
-                
-                <?php if ($campaign['status'] === 'rejected'): ?>
-                <div class="card mb-3 border-danger">
-                    <div class="card-header bg-danger text-white">
-                        <h6 class="mb-0"><i class="fas fa-times-circle me-2"></i>Rejected</h6>
-                    </div>
-                    <div class="card-body">
-                        <p class="mb-2"><strong>Rejection Reason:</strong></p>
-                        <p class="text-muted"><?= htmlspecialchars($campaign['rejection_reason'] ?? 'No reason provided') ?></p>
-                    </div>
-                </div>
-                <?php endif; ?>
-                
-                <?php if ($campaign['status'] === 'active' && $campaign['approved_by']): ?>
-                <div class="card mb-3 border-success">
-                    <div class="card-header bg-success text-white">
-                        <h6 class="mb-0"><i class="fas fa-check-circle me-2"></i>Approved</h6>
-                    </div>
-                    <div class="card-body">
-                        <p class="mb-1"><strong>Approved by:</strong> <?= htmlspecialchars($campaign['approved_by_name']) ?></p>
-                        <p class="mb-0"><strong>Approved at:</strong> <?= formatDate($campaign['approved_at'], 'd M Y H:i') ?></p>
-                    </div>
-                </div>
-                <?php endif; ?>
-                
                 <!-- Quick Actions -->
                 <div class="card">
                     <div class="card-header bg-secondary text-white">
@@ -309,11 +231,9 @@ $flashMessage = getFlashMessage();
                                 <label class="form-label">Change Status</label>
                                 <select name="status" class="form-select" required>
                                     <option value="draft" <?= $campaign['status'] === 'draft' ? 'selected' : '' ?>>Draft</option>
-                                    <option value="pending_approval" <?= $campaign['status'] === 'pending_approval' ? 'selected' : '' ?>>Pending Approval</option>
                                     <option value="active" <?= $campaign['status'] === 'active' ? 'selected' : '' ?>>Active</option>
                                     <option value="completed" <?= $campaign['status'] === 'completed' ? 'selected' : '' ?>>Completed</option>
                                     <option value="closed" <?= $campaign['status'] === 'closed' ? 'selected' : '' ?>>Closed</option>
-                                    <option value="rejected" <?= $campaign['status'] === 'rejected' ? 'selected' : '' ?>>Rejected</option>
                                 </select>
                             </div>
                             <button type="submit" class="btn btn-primary w-100">Update Status</button>
@@ -438,36 +358,6 @@ $flashMessage = getFlashMessage();
             </div>
         </div>
     </main>
-    
-    <!-- Rejection Modal -->
-    <div class="modal fade" id="rejectModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title"><i class="fas fa-times-circle me-2"></i>Reject Campaign</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <form method="POST">
-                    <div class="modal-body">
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Warning:</strong> The campaign creator will be notified of this rejection.
-                        </div>
-                        <div class="mb-3">
-                            <label for="rejection_reason" class="form-label">Rejection Reason *</label>
-                            <textarea class="form-control" id="rejection_reason" name="rejection_reason" rows="4" required placeholder="Please provide a clear reason for rejection (e.g., missing documents, insufficient information, etc.)"></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" name="reject_campaign" class="btn btn-danger">
-                            <i class="fas fa-times-circle me-2"></i>Reject Campaign
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
