@@ -203,11 +203,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label for="status" class="form-label">Status</label>
                                 <select class="form-select" id="status" name="status">
                                     <option value="draft">Save as Draft</option>
-                                    <option value="pending_approval">Submit for Approval</option>
+                                    <option value="active">Make Active</option>
                                 </select>
                                 <small class="text-muted">
                                     <i class="fas fa-info-circle me-1"></i>
-                                    Campaigns must be approved by admin before going active
+                                    Set to Active to make the campaign visible to donors
                                 </small>
                             </div>
                             
@@ -238,7 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <li>Any official documentation</li>
                                 </ul>
                             </li>
-                            <li>Save as Draft to review before making it Active</li>
+                            <li>Save as Draft to review, or set to Active to publish immediately</li>
                         </ul>
                     </div>
                 </div>
@@ -246,7 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="card bg-info text-white mt-3">
                     <div class="card-body">
                         <h6 class="card-title"><i class="fas fa-shield-alt me-2"></i>Document Requirements</h6>
-                        <p class="small mb-0">For transparency and accountability, please upload relevant supporting documents such as approval letters from the principal or school administration.</p>
+                        <p class="small mb-0">For transparency and accountability, please upload supporting documents such as approval letters from the principal or school administration. These documents verify that the campaign has been approved outside the system.</p>
                     </div>
                 </div>
             </div>

@@ -38,32 +38,31 @@ $totalRaised = $stmt->fetch()['total'] ?? 0;
     <title>KopuGive - MRSM Kota Putra Donation System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <?php include 'includes/theme_styles.php'; ?>
     <style>
         .hero-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--white);
+            color: var(--text-primary);
             padding: 5rem 0;
+            border-bottom: 3px solid var(--maroon-primary);
         }
-        .campaign-card {
-            transition: transform 0.3s, box-shadow 0.3s;
-            border: none;
-            border-radius: 15px;
-            overflow: hidden;
+        .hero-section h1 {
+            color: var(--maroon-primary);
         }
-        .campaign-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        .campaign-image {
-            height: 200px;
-            object-fit: cover;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .hero-section .lead {
+            color: var(--text-secondary);
         }
         .stat-box {
             padding: 2rem;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            border-top: 3px solid var(--gold-primary);
+        }
+        .stat-box:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
         }
         .navbar-brand {
             font-weight: bold;

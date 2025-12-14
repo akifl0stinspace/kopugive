@@ -56,26 +56,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Login - KopuGive</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <?php include '../includes/theme_styles.php'; ?>
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--light-gray);
             min-height: 100vh;
             display: flex;
             align-items: center;
         }
         .login-card {
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+            border-top: 3px solid var(--maroon-primary);
         }
         .brand-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px 0 0 15px;
+            background: var(--white);
+            color: var(--maroon-primary);
+            border-radius: 8px 0 0 8px;
             padding: 3rem;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
+            border-right: 2px solid var(--gold-primary);
         }
     </style>
 </head>

@@ -184,13 +184,13 @@ if ($periodFilter !== 'all') {
         
         .report-header {
             text-align: center;
-            border-bottom: 3px solid #667eea;
+            border-bottom: 3px solid #800020;
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
         
         .report-header h1 {
-            color: #667eea;
+            color: #800020;
             font-weight: bold;
             margin-bottom: 10px;
         }
@@ -203,10 +203,12 @@ if ($periodFilter !== 'all') {
         }
         
         .stat-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: white;
+            color: #800020;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #800020;
+            border-top: 2px solid #D4AF37;
             text-align: center;
             margin-bottom: 20px;
         }
@@ -223,8 +225,8 @@ if ($periodFilter !== 'all') {
         }
         
         .section-title {
-            color: #667eea;
-            border-bottom: 2px solid #667eea;
+            color: #800020;
+            border-bottom: 2px solid #800020;
             padding-bottom: 10px;
             margin: 30px 0 20px 0;
             font-weight: bold;
@@ -235,7 +237,7 @@ if ($periodFilter !== 'all') {
         }
         
         .table thead {
-            background: #667eea;
+            background: #800020;
             color: white;
         }
         

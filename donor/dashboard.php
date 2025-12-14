@@ -52,18 +52,7 @@ $flashMessage = getFlashMessage();
     <title>Donor Dashboard - KopuGive</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .navbar-custom {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .stat-card {
-            border-left: 4px solid;
-            transition: transform 0.3s;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-    </style>
+    <?php include '../includes/theme_styles.php'; ?>
 </head>
 <body class="bg-light">
     <!-- Navigation -->
@@ -110,7 +99,7 @@ $flashMessage = getFlashMessage();
     <!-- Main Content -->
     <div class="container my-5">
         <!-- Welcome Banner -->
-        <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="card border-0 shadow-sm mb-4 welcome-banner">
             <div class="card-body p-4">
                 <h3 class="mb-2">Welcome back, <?= htmlspecialchars($_SESSION['full_name']) ?>! 👋</h3>
                 <p class="mb-0">Thank you for being part of our community. Your contributions make a difference!</p>

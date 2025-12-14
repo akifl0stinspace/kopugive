@@ -246,15 +246,13 @@ $flashMessage = getFlashMessage();
                                 <label for="status" class="form-label">Status</label>
                                 <select class="form-select" id="status" name="status">
                                     <option value="draft" <?= ($campaign['status'] === 'draft') ? 'selected' : '' ?>>Draft</option>
-                                    <option value="pending_approval" <?= ($campaign['status'] === 'pending_approval') ? 'selected' : '' ?>>Submit for Approval</option>
                                     <option value="active" <?= ($campaign['status'] === 'active') ? 'selected' : '' ?>>Active</option>
                                     <option value="completed" <?= ($campaign['status'] === 'completed') ? 'selected' : '' ?>>Completed</option>
                                     <option value="closed" <?= ($campaign['status'] === 'closed') ? 'selected' : '' ?>>Closed</option>
-                                    <option value="rejected" <?= ($campaign['status'] === 'rejected') ? 'selected' : '' ?>>Rejected</option>
                                 </select>
                                 <small class="text-muted">
                                     <i class="fas fa-info-circle me-1"></i>
-                                    Campaigns must be approved by admin before going active
+                                    Set to Active to make the campaign visible to donors
                                 </small>
                             </div>
                             

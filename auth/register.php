@@ -73,19 +73,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Register - KopuGive</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <?php include '../includes/theme_styles.php'; ?>
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--light-gray);
             min-height: 100vh;
             padding: 3rem 0;
         }
         .register-card {
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+            border-top: 3px solid var(--maroon-primary);
         }
     </style>
 </head>

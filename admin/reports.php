@@ -211,7 +211,7 @@ $flashMessage = getFlashMessage();
                     <i class="fas fa-file-csv me-2"></i>Export CSV
                 </button>
                 <a href="generate_report.php?campaign_id=<?= $campaignFilter ?>&period=<?= $periodFilter ?><?= $startDate ? '&start_date='.$startDate : '' ?><?= $endDate ? '&end_date='.$endDate : '' ?>" class="btn btn-primary me-2" target="_blank">
-                    <i class="fas fa-file-alt me-2"></i>Summary Report
+                    <i class="fas fa-file-alt me-2"></i>Generate Report
                 </a>
                 <a href="generate_report.php?campaign_id=<?= $campaignFilter ?>&period=<?= $periodFilter ?><?= $startDate ? '&start_date='.$startDate : '' ?><?= $endDate ? '&end_date='.$endDate : '' ?>&type=donations" class="btn btn-info" target="_blank">
                     <i class="fas fa-list me-2"></i>Donation List
