@@ -52,7 +52,7 @@
     }
     
     .navbar-custom .navbar-brand {
-        color: var(--maroon-primary) !important;
+        color: var(--text-primary) !important;
         font-weight: 700;
         font-size: 1.5rem;
     }
@@ -68,8 +68,8 @@
     
     .navbar-custom .nav-link:hover,
     .navbar-custom .nav-link.active {
-        background: var(--gold-light);
-        color: var(--maroon-primary) !important;
+        background: var(--light-gray);
+        color: var(--text-primary) !important;
     }
     
     .navbar-custom .dropdown-menu {
@@ -96,22 +96,26 @@
     }
     
     .sidebar .nav-link:hover {
-        background: var(--gold-light);
-        color: var(--maroon-primary);
-        border-left-color: var(--gold-primary);
+        background: var(--light-gray);
+        color: var(--text-primary);
+        border-left-color: var(--maroon-primary);
     }
     
     .sidebar .nav-link.active {
-        background: var(--light-gray);
-        color: var(--maroon-primary);
+        background: var(--maroon-primary);
+        color: var(--white);
         border-left-color: var(--maroon-primary);
         font-weight: 600;
+    }
+    
+    .sidebar .nav-link.active i {
+        color: var(--white);
     }
     
     .sidebar .nav-link i {
         width: 20px;
         margin-right: 10px;
-        color: var(--maroon-primary);
+        color: var(--text-secondary);
     }
     
     /* ============================================
@@ -179,11 +183,17 @@
     
     .card-header {
         background: var(--white);
-        color: var(--maroon-primary);
-        border-bottom: 2px solid var(--gold-primary);
+        color: var(--text-primary);
+        border-bottom: 2px solid var(--border-gray);
         border-radius: 8px 8px 0 0 !important;
         font-weight: 600;
         padding: 1rem 1.5rem;
+    }
+    
+    .card-header.bg-primary {
+        background: var(--maroon-primary) !important;
+        color: var(--white) !important;
+        border-bottom: none;
     }
     
     /* Stat Cards */
@@ -196,11 +206,10 @@
     .stat-card:hover {
         transform: translateY(-2px);
         box-shadow: var(--shadow-md);
-        border-left-color: var(--gold-primary);
     }
     
     .stat-card .text-primary {
-        color: var(--maroon-primary) !important;
+        color: var(--text-primary) !important;
     }
     
     /* Campaign Cards */
@@ -327,17 +336,19 @@
        ============================================ */
     
     .welcome-banner {
-        background: var(--white);
-        color: var(--text-primary);
+        background: var(--maroon-primary);
+        color: var(--white);
         border-radius: 8px;
         padding: 2rem;
-        box-shadow: var(--shadow-sm);
-        border-left: 4px solid var(--maroon-primary);
-        border-top: 2px solid var(--gold-primary);
+        box-shadow: var(--shadow-md);
     }
     
     .welcome-banner h3 {
-        color: var(--maroon-primary);
+        color: var(--white);
+    }
+    
+    .welcome-banner p {
+        color: rgba(255, 255, 255, 0.9);
     }
     
     /* ============================================
@@ -355,6 +366,10 @@
        ============================================ */
     
     .text-primary {
+        color: var(--text-primary) !important;
+    }
+    
+    .text-maroon {
         color: var(--maroon-primary) !important;
     }
     
@@ -364,6 +379,7 @@
     
     .bg-primary {
         background: var(--maroon-primary) !important;
+        color: var(--white) !important;
     }
     
     .bg-gold {
@@ -375,13 +391,13 @@
        ============================================ */
     
     a {
-        color: var(--maroon-primary);
+        color: var(--text-primary);
         text-decoration: none;
         transition: all 0.3s ease;
     }
     
     a:hover {
-        color: var(--maroon-dark);
+        color: var(--maroon-primary);
     }
     
     /* ============================================
@@ -411,8 +427,8 @@
     
     .dropdown-item:hover,
     .dropdown-item:focus {
-        background-color: var(--gold-light);
-        color: var(--maroon-primary);
+        background-color: var(--light-gray);
+        color: var(--text-primary);
     }
     
     /* ============================================

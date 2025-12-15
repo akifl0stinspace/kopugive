@@ -41,16 +41,19 @@ $totalRaised = $stmt->fetch()['total'] ?? 0;
     <?php include 'includes/theme_styles.php'; ?>
     <style>
         .hero-section {
-            background: var(--white);
-            color: var(--text-primary);
+            background: #800020;
+            color: white;
             padding: 5rem 0;
-            border-bottom: 3px solid var(--maroon-primary);
         }
         .hero-section h1 {
-            color: var(--maroon-primary);
+            color: white;
+            font-weight: 700;
         }
         .hero-section .lead {
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.95);
+        }
+        .hero-section p {
+            color: rgba(255, 255, 255, 0.9);
         }
         .stat-box {
             padding: 2rem;
@@ -58,7 +61,7 @@ $totalRaised = $stmt->fetch()['total'] ?? 0;
             border-radius: 8px;
             box-shadow: var(--shadow-sm);
             transition: all 0.3s ease;
-            border-top: 3px solid var(--gold-primary);
+            border-left: 4px solid #800020;
         }
         .stat-box:hover {
             transform: translateY(-3px);

@@ -1,0 +1,15 @@
+{
+    "name": "kopugive/donation-system",
+    "description": "KopuGive - MRSM Kota Putra Donation System",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "stripe/stripe-php": "^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "KopuGive\\": "src/"
+        }
+    }
+}
+

@@ -3,7 +3,7 @@
         <!-- Sidebar -->
         <nav class="col-md-2 d-md-block sidebar p-3 position-fixed">
             <div class="text-center mb-4">
-                <h4 class="text-primary"><i class="fas fa-hand-holding-heart"></i> KopuGive</h4>
+                <h4><i class="fas fa-hand-holding-heart"></i> KopuGive</h4>
                 <small class="text-muted">Admin Panel</small>
             </div>
             
@@ -23,6 +23,11 @@
                 <li class="nav-item">
                     <a class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'donations.php' ? 'active' : '' ?>" href="donations.php">
                         <i class="fas fa-hand-holding-usd"></i> Donations
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'stripe_transactions.php' ? 'active' : '' ?>" href="stripe_transactions.php">
+                        <i class="fas fa-credit-card"></i> Stripe Payments
                     </a>
                 </li>
                 <li class="nav-item">

@@ -84,27 +84,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['donate'])) {
                 $donorName = isLoggedIn() ? $_SESSION['full_name'] : ($_POST['donor_name'] ?? 'Anonymous');
                 $donorEmail = isLoggedIn() ? $_SESSION['email'] : ($_POST['donor_email'] ?? '');
                 $donorPhone = $_POST['donor_phone'] ?? '';
-                $transactionId = 'TXN' . strtoupper(generateRandomString(10));
                 
                 $stmt = $db->prepare("
                     INSERT INTO donations 
                     (campaign_id, donor_id, donor_name, donor_email, donor_phone, amount, payment_method, 
-                     transaction_id, receipt_path, donation_message, is_anonymous, status) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+                     receipt_path, donation_message, is_anonymous, status, payment_status) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending')
                 ");
                 $stmt->execute([
                     $campaignId, $donorId, $donorName, $donorEmail, $donorPhone,
-                    $amount, $paymentMethod, $transactionId, $receiptPath, $message, $isAnonymous
+                    $amount, $paymentMethod, $receiptPath, $message, $isAnonymous
                 ]);
                 
                 $donationId = $db->lastInsertId();
                 
                 if ($donorId) {
-                    logActivity($db, $donorId, 'Donation made', 'donation', $donationId);
+                    logActivity($db, $donorId, 'Donation created', 'donation', $donationId);
                 }
                 
-                setFlashMessage('success', 'Thank you for your donation! Your donation is pending verification.');
-                redirect('my_donations.php');
+                // Redirect to Stripe checkout for online payments
+                if (in_array($paymentMethod, ['online_banking', 'card', 'ewallet'])) {
+                    redirect('../payment/stripe_checkout.php?donation_id=' . $donationId);
+                } else {
+                    // For cash/manual payments, keep old flow
+                    setFlashMessage('success', 'Thank you for your donation! Your donation is pending verification.');
+                    redirect('my_donations.php');
+                }
             }
         } catch (Exception $e) {
             error_log("Donation error: " . $e->getMessage());
@@ -282,18 +287,22 @@ $flashMessage = getFlashMessage();
                             
                             <div class="mb-3">
                                 <label class="form-label">Payment Method</label>
-                                <select class="form-select" name="payment_method">
-                                    <option value="online_banking">Online Banking</option>
-                                    <option value="card">Credit/Debit Card</option>
-                                    <option value="ewallet">E-Wallet</option>
-                                    <option value="cash">Cash</option>
+                                <select class="form-select" name="payment_method" id="payment_method">
+                                    <option value="online_banking">Online Banking (FPX) - via Stripe</option>
+                                    <option value="card">Credit/Debit Card - via Stripe</option>
+                                    <option value="ewallet">E-Wallet (GrabPay) - via Stripe</option>
+                                    <option value="cash">Cash (Manual Verification)</option>
                                 </select>
+                                <small class="text-muted">
+                                    <i class="fas fa-shield-alt me-1"></i>
+                                    Secure payment powered by Stripe
+                                </small>
                             </div>
                             
-                            <div class="mb-3">
-                                <label class="form-label">Upload Receipt</label>
+                            <div class="mb-3" id="receipt_upload_section">
+                                <label class="form-label">Upload Receipt (Optional for Cash)</label>
                                 <input type="file" class="form-control" name="receipt" accept="image/*,application/pdf">
-                                <small class="text-muted">JPG, PNG, PDF (Max 5MB)</small>
+                                <small class="text-muted">JPG, PNG, PDF (Max 5MB) - Only needed for cash donations</small>
                             </div>
                             
                             <div class="mb-3">
@@ -327,6 +336,25 @@ $flashMessage = getFlashMessage();
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Show/hide receipt upload based on payment method
+        document.getElementById('payment_method')?.addEventListener('change', function() {
+            const receiptSection = document.getElementById('receipt_upload_section');
+            if (this.value === 'cash') {
+                receiptSection.style.display = 'block';
+            } else {
+                receiptSection.style.display = 'none';
+            }
+        });
+        
+        // Hide receipt upload by default for online payments
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentMethod = document.getElementById('payment_method');
+            if (paymentMethod && paymentMethod.value !== 'cash') {
+                document.getElementById('receipt_upload_section').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
 

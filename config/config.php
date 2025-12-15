@@ -37,10 +37,12 @@ define('SMTP_PASSWORD', 'your_password_here');
 define('SMTP_FROM_EMAIL', 'noreply@kopugive.com');
 define('SMTP_FROM_NAME', 'KopuGive MRSM Kota Putra');
 
-// Payment Gateway Settings (Mock/FPX)
-define('PAYMENT_MODE', 'sandbox'); // sandbox or live
-define('FPX_MERCHANT_ID', 'TEST_MERCHANT_001');
-define('FPX_EXCHANGE_ID', 'EX00000001');
+// Payment Gateway Settings (Stripe)
+define('PAYMENT_MODE', 'test'); // test or live
+define('STRIPE_PUBLISHABLE_KEY', 'pk_test_51SediJQhjUMmfsnlmei1Xe9S5eODwkUkFSXYuUVeYTXGsu08BBlqb4VzDY9l7O32cbpgxnB1bnO7d1IRmuVwijvX008qvnNY56 '); // Get from Stripe Dashboard
+define('STRIPE_SECRET_KEY', 'sk_test_51SediJQhjUMmfsnlCeRvihj0k345KQOv3HJsDpJqsTv26DBiW4x1Hjm9WtCDlre2o3TWV7Xo5sAt4T0fgwQHt2CM00crL2SBkz '); // Get from Stripe Dashboard
+define('STRIPE_WEBHOOK_SECRET', 'whsec_YOUR_WEBHOOK_SECRET_HERE'); // Get from Stripe Dashboard (optional for now)
+define('STRIPE_CURRENCY', 'myr'); // Malaysian Ringgit
 
 // Security Settings
 define('PASSWORD_MIN_LENGTH', 8);
