@@ -329,7 +329,7 @@ function sendReceiptEmail($donation, $receiptPath) {
 }
 
 /**
- * Generate and email receipt for a donation
+ * Generate receipt for a donation (download only, no email)
  * 
  * @param int $donationId Donation ID
  * @param PDO $db Database connection
@@ -374,14 +374,10 @@ function processReceiptForDonation($donationId, $db) {
         ");
         $stmt->execute([$receiptResult['path'], $donationId]);
         
-        // Send email with receipt
-        $emailResult = sendReceiptEmail($donation, $receiptResult['filepath']);
-        
         return [
             'success' => true,
             'receipt_path' => $receiptResult['path'],
-            'email_sent' => $emailResult['success'],
-            'message' => 'Receipt generated' . ($emailResult['success'] ? ' and emailed' : ' but email failed')
+            'message' => 'Receipt generated successfully'
         ];
         
     } catch (Exception $e) {

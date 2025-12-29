@@ -78,7 +78,7 @@ try {
             }
         }
 
-        setFlashMessage('success', 'Thank you! Your donation has been processed successfully. A receipt has been sent to your email.');
+        setFlashMessage('success', 'Thank you! Your donation has been processed successfully. You can download your receipt from My Donations page.');
     } else {
         setFlashMessage('warning', 'Payment is being processed. Please check your donation status later.');
     }

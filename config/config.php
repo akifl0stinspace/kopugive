@@ -29,14 +29,6 @@ define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('MAX_FILE_SIZE', 5 * 1024 * 1024); // 5MB
 define('ALLOWED_FILE_TYPES', ['jpg', 'jpeg', 'png', 'pdf']);
 
-// Email Configuration (for receipt notifications)
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_PORT', 587);
-define('SMTP_USERNAME', 'noreply@kopugive.com');
-define('SMTP_PASSWORD', 'your_password_here');
-define('SMTP_FROM_EMAIL', 'noreply@kopugive.com');
-define('SMTP_FROM_NAME', 'KopuGive MRSM Kota Putra');
-
 // Payment Gateway Settings (Stripe)
 define('PAYMENT_MODE', 'test'); // test or live
 define('STRIPE_PUBLISHABLE_KEY', 'letak sini'); // Get from Stripe Dashboard

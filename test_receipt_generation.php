@@ -57,48 +57,13 @@ if ($receiptResult['success']) {
 
 echo "<hr>";
 
-// Test email sending (only if email is configured)
-echo "<h3>2. Testing Email Notification...</h3>";
-
-if (empty($donation['donor_email'])) {
-    echo "<p style='color: orange;'>⚠ No email address for this donation. Skipping email test.</p>";
-} else {
-    echo "<p><strong>Recipient:</strong> " . htmlspecialchars($donation['donor_email']) . "</p>";
-    
-    // Check if SMTP is configured
-    if (SMTP_USERNAME === 'noreply@kopugive.com' || SMTP_PASSWORD === 'your_password_here') {
-        echo "<p style='color: orange;'>⚠ SMTP not configured. Please update config.php with your email settings.</p>";
-        echo "<p>To enable email notifications:</p>";
-        echo "<ol>";
-        echo "<li>Open <code>config/config.php</code></li>";
-        echo "<li>Update SMTP_HOST, SMTP_USERNAME, SMTP_PASSWORD</li>";
-        echo "<li>For Gmail: Use App Password (not regular password)</li>";
-        echo "</ol>";
-    } else {
-        if ($receiptResult['success']) {
-            $emailResult = sendReceiptEmail($donation, $receiptResult['filepath']);
-            
-            if ($emailResult['success']) {
-                echo "<p style='color: green;'>✓ Email sent successfully!</p>";
-            } else {
-                echo "<p style='color: red;'>✗ Email failed: " . htmlspecialchars($emailResult['message']) . "</p>";
-            }
-        } else {
-            echo "<p style='color: red;'>Cannot test email - receipt generation failed.</p>";
-        }
-    }
-}
-
-echo "<hr>";
-
 // Test the complete process
-echo "<h3>3. Testing Complete Process...</h3>";
+echo "<h3>2. Testing Complete Process...</h3>";
 $processResult = processReceiptForDonation($donation['donation_id'], $db);
 
 if ($processResult['success']) {
     echo "<p style='color: green;'>✓ Complete process successful!</p>";
     echo "<p><strong>Receipt Path:</strong> " . htmlspecialchars($processResult['receipt_path']) . "</p>";
-    echo "<p><strong>Email Sent:</strong> " . ($processResult['email_sent'] ? 'Yes' : 'No') . "</p>";
 } else {
     echo "<p style='color: red;'>✗ Process failed: " . htmlspecialchars($processResult['message']) . "</p>";
 }
@@ -107,9 +72,9 @@ echo "<hr>";
 echo "<h2>Test Summary</h2>";
 echo "<ul>";
 echo "<li>Receipt Generation: " . ($receiptResult['success'] ? '✓ PASS' : '✗ FAIL') . "</li>";
-echo "<li>Email Notification: " . (empty($donation['donor_email']) ? 'SKIPPED' : (isset($emailResult) && $emailResult['success'] ? '✓ PASS' : '✗ FAIL')) . "</li>";
 echo "<li>Complete Process: " . ($processResult['success'] ? '✓ PASS' : '✗ FAIL') . "</li>";
 echo "</ul>";
+echo "<p><strong>Note:</strong> Email notifications are disabled. Receipts are available for download only.</p>";
 
 ?>
 <style>
