@@ -167,8 +167,8 @@ $flashMessage = getFlashMessage();
                                     </td>
                                     <td>
                                         <?php if ($donation['receipt_path']): ?>
-                                            <a href="../<?= htmlspecialchars($donation['receipt_path']) ?>" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-file-image"></i>
+                                            <a href="../<?= htmlspecialchars($donation['receipt_path']) ?>" target="_blank" class="btn btn-sm btn-outline-primary" download title="Download Receipt">
+                                                <i class="fas fa-download"></i>
                                             </a>
                                         <?php else: ?>
                                             <span class="text-muted">No receipt</span>
@@ -176,14 +176,16 @@ $flashMessage = getFlashMessage();
                                     </td>
                                     <td>
                                         <?php
-                                        $badges = [
-                                            'pending' => 'warning',
-                                            'verified' => 'success',
-                                            'rejected' => 'danger'
-                                        ];
-                                        $badge = $badges[$donation['status']] ?? 'secondary';
+                                        // Simplify status display to Successful or Unsuccessful
+                                        if ($donation['status'] === 'verified') {
+                                            $displayStatus = 'Successful';
+                                            $badge = 'success';
+                                        } else {
+                                            $displayStatus = 'Unsuccessful';
+                                            $badge = 'danger';
+                                        }
                                         ?>
-                                        <span class="badge bg-<?= $badge ?>"><?= ucfirst($donation['status']) ?></span>
+                                        <span class="badge bg-<?= $badge ?>"><?= $displayStatus ?></span>
                                         <?php if ($donation['verified_at']): ?>
                                             <br><small class="text-muted">by <?= htmlspecialchars($donation['verifier_name'] ?? 'System') ?></small>
                                         <?php endif; ?>
@@ -261,14 +263,16 @@ $flashMessage = getFlashMessage();
                                 <div class="col-md-6">
                                     <h6 class="text-muted">Status</h6>
                                     <?php
-                                    $badges = [
-                                        'pending' => 'warning',
-                                        'verified' => 'success',
-                                        'rejected' => 'danger'
-                                    ];
-                                    $badge = $badges[$donation['status']] ?? 'secondary';
+                                    // Simplify status display to Successful or Unsuccessful
+                                    if ($donation['status'] === 'verified') {
+                                        $displayStatus = 'Successful';
+                                        $badge = 'success';
+                                    } else {
+                                        $displayStatus = 'Unsuccessful';
+                                        $badge = 'danger';
+                                    }
                                     ?>
-                                    <span class="badge bg-<?= $badge ?> fs-6"><?= ucfirst($donation['status']) ?></span>
+                                    <span class="badge bg-<?= $badge ?> fs-6"><?= $displayStatus ?></span>
                                     <?php if ($donation['verified_at']): ?>
                                         <p class="mt-2 small"><strong>Verified by:</strong> <?= htmlspecialchars($donation['verifier_name'] ?? 'System') ?><br>
                                         <strong>Verified at:</strong> <?= formatDate($donation['verified_at'], 'd M Y H:i') ?></p>
@@ -277,11 +281,11 @@ $flashMessage = getFlashMessage();
                                 <div class="col-md-6">
                                     <h6 class="text-muted">Receipt</h6>
                                     <?php if ($donation['receipt_path']): ?>
-                                        <a href="../<?= htmlspecialchars($donation['receipt_path']) ?>" target="_blank" class="btn btn-primary">
-                                            <i class="fas fa-file-image me-2"></i>View Receipt
+                                        <a href="../<?= htmlspecialchars($donation['receipt_path']) ?>" target="_blank" class="btn btn-primary" download>
+                                            <i class="fas fa-download me-2"></i>Download Receipt
                                         </a>
                                     <?php else: ?>
-                                        <p class="text-muted">No receipt uploaded</p>
+                                        <p class="text-muted">No receipt available</p>
                                     <?php endif; ?>
                                 </div>
                             </div>

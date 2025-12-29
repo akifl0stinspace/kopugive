@@ -96,8 +96,8 @@ $donations = $stmt->fetchAll();
                                         <td><small><?= ucfirst(str_replace('_', ' ', $donation['payment_method'])) ?></small></td>
                                         <td>
                                             <?php if ($donation['receipt_path']): ?>
-                                                <a href="../<?= htmlspecialchars($donation['receipt_path']) ?>" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-file-image"></i> View
+                                                <a href="../<?= htmlspecialchars($donation['receipt_path']) ?>" target="_blank" class="btn btn-sm btn-outline-primary" download>
+                                                    <i class="fas fa-download"></i> Download
                                                 </a>
                                             <?php else: ?>
                                                 <span class="text-muted">No receipt</span>
@@ -105,25 +105,20 @@ $donations = $stmt->fetchAll();
                                         </td>
                                         <td>
                                             <?php
-                                            $badges = [
-                                                'pending' => 'warning',
-                                                'verified' => 'success',
-                                                'rejected' => 'danger'
-                                            ];
-                                            $badge = $badges[$donation['status']] ?? 'secondary';
-                                            $icons = [
-                                                'pending' => 'clock',
-                                                'verified' => 'check-circle',
-                                                'rejected' => 'times-circle'
-                                            ];
-                                            $icon = $icons[$donation['status']] ?? 'circle';
+                                            // Simplify status display to Successful or Unsuccessful
+                                            if ($donation['status'] === 'verified') {
+                                                $displayStatus = 'Successful';
+                                                $badge = 'success';
+                                                $icon = 'check-circle';
+                                            } else {
+                                                $displayStatus = 'Unsuccessful';
+                                                $badge = 'danger';
+                                                $icon = 'times-circle';
+                                            }
                                             ?>
                                             <span class="badge bg-<?= $badge ?>">
-                                                <i class="fas fa-<?= $icon ?> me-1"></i><?= ucfirst($donation['status']) ?>
+                                                <i class="fas fa-<?= $icon ?> me-1"></i><?= $displayStatus ?>
                                             </span>
-                                            <?php if ($donation['status'] === 'pending'): ?>
-                                                <br><small class="text-muted">Awaiting verification</small>
-                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

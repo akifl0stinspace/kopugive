@@ -9,6 +9,7 @@
 
 require_once '../config/config.php';
 require_once '../includes/functions.php';
+require_once '../includes/receipt_functions.php';
 require_once '../vendor/autoload.php';
 
 // Initialize Stripe
@@ -85,6 +86,14 @@ switch ($event->type) {
                             WHERE campaign_id = ?
                         ");
                         $stmt->execute([$donation['amount'], $donation['campaign_id']]);
+                        
+                        // Generate and email receipt
+                        $receiptResult = processReceiptForDonation($donationId, $db);
+                        if ($receiptResult['success']) {
+                            error_log("Stripe Webhook: Receipt generated for donation #{$donationId}");
+                        } else {
+                            error_log("Stripe Webhook: Failed to generate receipt for donation #{$donationId}: " . $receiptResult['message']);
+                        }
                         
                         // Log activity
                         if ($donation['donor_id']) {

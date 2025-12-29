@@ -245,14 +245,16 @@ $flashMessage = getFlashMessage();
                                                     <td><strong><?= formatCurrency($donation['amount']) ?></strong></td>
                                                     <td>
                                                         <?php
-                                                        $badges = [
-                                                            'pending' => 'warning',
-                                                            'verified' => 'success',
-                                                            'rejected' => 'danger'
-                                                        ];
-                                                        $badge = $badges[$donation['status']] ?? 'secondary';
+                                                        // Simplify status display to Successful or Unsuccessful
+                                                        if ($donation['status'] === 'verified') {
+                                                            $displayStatus = 'Successful';
+                                                            $badge = 'success';
+                                                        } else {
+                                                            $displayStatus = 'Unsuccessful';
+                                                            $badge = 'danger';
+                                                        }
                                                         ?>
-                                                        <span class="badge bg-<?= $badge ?>"><?= ucfirst($donation['status']) ?></span>
+                                                        <span class="badge bg-<?= $badge ?>"><?= $displayStatus ?></span>
                                                     </td>
                                                     <td><?= timeAgo($donation['created_at']) ?></td>
                                                 </tr>

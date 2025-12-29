@@ -39,8 +39,8 @@ define('SMTP_FROM_NAME', 'KopuGive MRSM Kota Putra');
 
 // Payment Gateway Settings (Stripe)
 define('PAYMENT_MODE', 'test'); // test or live
-define('STRIPE_PUBLISHABLE_KEY', ''); // Get from Stripe Dashboard
-define('STRIPE_SECRET_KEY', ''); // Get from Stripe Dashboard
+define('STRIPE_PUBLISHABLE_KEY', 'letak sini'); // Get from Stripe Dashboard
+define('STRIPE_SECRET_KEY', 'letak sini'); // Get from Stripe Dashboard
 define('STRIPE_WEBHOOK_SECRET', 'whsec_YOUR_WEBHOOK_SECRET_HERE'); // Get from Stripe Dashboard (optional for now)
 define('STRIPE_CURRENCY', 'myr'); // Malaysian Ringgit
 

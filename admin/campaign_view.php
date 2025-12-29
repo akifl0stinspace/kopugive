@@ -330,20 +330,22 @@ $flashMessage = getFlashMessage();
                                         <td><small><?= ucfirst(str_replace('_', ' ', $donation['payment_method'])) ?></small></td>
                                         <td>
                                             <?php
-                                            $badges = [
-                                                'pending' => 'warning',
-                                                'verified' => 'success',
-                                                'rejected' => 'danger'
-                                            ];
-                                            $badge = $badges[$donation['status']] ?? 'secondary';
+                                            // Simplify status display to Successful or Unsuccessful
+                                            if ($donation['status'] === 'verified') {
+                                                $displayStatus = 'Successful';
+                                                $badge = 'success';
+                                            } else {
+                                                $displayStatus = 'Unsuccessful';
+                                                $badge = 'danger';
+                                            }
                                             ?>
-                                            <span class="badge bg-<?= $badge ?>"><?= ucfirst($donation['status']) ?></span>
+                                            <span class="badge bg-<?= $badge ?>"><?= $displayStatus ?></span>
                                         </td>
                                         <td><?= formatDate($donation['donation_date'], 'd M Y H:i') ?></td>
                                         <td>
                                             <?php if ($donation['receipt_path']): ?>
-                                                <a href="../<?= htmlspecialchars($donation['receipt_path']) ?>" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-file-image"></i> View
+                                                <a href="../<?= htmlspecialchars($donation['receipt_path']) ?>" target="_blank" class="btn btn-sm btn-outline-primary" download title="Download Receipt">
+                                                    <i class="fas fa-download"></i>
                                                 </a>
                                             <?php else: ?>
                                                 <span class="text-muted">No receipt</span>

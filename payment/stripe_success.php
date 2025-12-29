@@ -9,6 +9,7 @@
 session_start();
 require_once '../config/config.php';
 require_once '../includes/functions.php';
+require_once '../includes/receipt_functions.php';
 require_once '../vendor/autoload.php';
 
 // Initialize Stripe
@@ -63,13 +64,21 @@ try {
             ");
             $stmt->execute([$donation['amount'], $donation['campaign_id']]);
 
+            // Generate and email receipt
+            $receiptResult = processReceiptForDonation($donationId, $db);
+            if ($receiptResult['success']) {
+                error_log("Receipt generated for donation #{$donationId}: " . $receiptResult['receipt_path']);
+            } else {
+                error_log("Failed to generate receipt for donation #{$donationId}: " . $receiptResult['message']);
+            }
+
             // Log activity
             if ($donation['donor_id']) {
                 logActivity($db, $donation['donor_id'], 'Donation payment completed via Stripe', 'donation', $donationId);
             }
         }
 
-        setFlashMessage('success', 'Thank you! Your donation has been processed successfully.');
+        setFlashMessage('success', 'Thank you! Your donation has been processed successfully. A receipt has been sent to your email.');
     } else {
         setFlashMessage('warning', 'Payment is being processed. Please check your donation status later.');
     }

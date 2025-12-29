@@ -244,17 +244,17 @@ $pageTitle = 'Stripe Transactions';
                                                 </td>
                                                 <td>
                                                     <?php
-                                                    $statusColors = [
-                                                        'paid' => 'success',
-                                                        'pending' => 'warning',
-                                                        'failed' => 'danger',
-                                                        'refunded' => 'secondary',
-                                                        'checkout_created' => 'info'
-                                                    ];
-                                                    $color = $statusColors[$txn['payment_status']] ?? 'secondary';
+                                                    // Simplify status display to Successful or Unsuccessful
+                                                    if ($txn['payment_status'] === 'paid') {
+                                                        $displayStatus = 'Successful';
+                                                        $color = 'success';
+                                                    } else {
+                                                        $displayStatus = 'Unsuccessful';
+                                                        $color = 'danger';
+                                                    }
                                                     ?>
                                                     <span class="badge bg-<?= $color ?>">
-                                                        <?= ucfirst($txn['payment_status']) ?>
+                                                        <?= $displayStatus ?>
                                                     </span>
                                                 </td>
                                                 <td>
