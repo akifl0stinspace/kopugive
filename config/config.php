@@ -59,5 +59,3 @@ define('CURRENCY_SYMBOL', 'RM');
 
 // Include database config
 require_once __DIR__ . '/database.php';
-?>
-
